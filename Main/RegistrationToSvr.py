@@ -22,7 +22,7 @@ SVR_BASE_ADDR = 'http://onffworld.iptime.org:33774' #todo: https 보안 스트�
 RESTFUL_EXPRESSION = '/registration/rc'
 # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION)
 
-typeOfRc = 'rc_test_rev1'
+typeOfRc = 'rc1'
 ipv4Public = format(requests.get('https://api.ipify.org').text)
 # get ip address by google. we'll have to check it always return private addr.
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

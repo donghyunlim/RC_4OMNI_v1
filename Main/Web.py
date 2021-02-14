@@ -13,19 +13,19 @@ import pigpio #importing GPIO library
 import RegistrationToSvr
 
 ESC=4
-STEER = 27
+ESC_WEAPON=5
+
 CAMERA_X = 22
 CAMERA_Y = 23
+STEER = 27
 
-Camera_X_MAX = 2520
+Camera_X_MAX = 2500 # 2520, on origin code
 Camera_X_MIN = 520
 Camera_Y_MAX = 1520
 Camera_Y_MIN = 800
 
 Camera_X = 1520
 Camera_Y = 1000
-
-ESC_WEAPON=17
 
 pi = pigpio.pi()
 pi.set_servo_pulsewidth(ESC, 0) 
@@ -50,9 +50,14 @@ def connectionCheck():
 	
 @app.route("/arm")
 def arm():  
+	#weapon
+	pi.set_servo_pulsewidth(ESC_WEAPON, 1500)
+	# pi.set_PWM_frequency(ESC_WEAPON,50)
+	#movement
 	pi.set_servo_pulsewidth(ESC, 1500)
 	pi.set_PWM_frequency(STEER,50)
 	pi.set_servo_pulsewidth(STEER,0)
+	#camera
 	pi.set_PWM_frequency(CAMERA_X,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
 	pi.set_servo_pulsewidth(CAMERA_X,1520) #1.52ms, 500(min) - 2500(max)
 	pi.set_PWM_frequency(CAMERA_Y,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
@@ -125,17 +130,19 @@ def motorControl():
 		pi.set_servo_pulsewidth(ESC, 1500)
 	return "Checked: " + state
 	
-#????
+#good
 @app.route("/steer")
 def steerContorl():
 	dir = request.args.get("dir")
 	if dir == "right":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(1710+velocity,1710,1720)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(1500+velocity*30,1200,1500)))
+		# pi.set_servo_pulsewidth(STEER, int(Clamp(1710+velocity,1710,1720)))
 		# pi.set_servo_pulsewidth(STEER,1720)
 	elif dir == "left":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(1310+velocity,1310,1320)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(1500-velocity*30,1500,1800)))
+		# pi.set_servo_pulsewidth(STEER, int(Clamp(1310-velocity,1310,1320)))
 		# pi.set_servo_pulsewidth(STEER,1320)
 	elif dir == "straight": #not use
 		# pi.set_servo_pulsewidth(STEER, int(Clamp(1510+velocity,1510,1520)))
@@ -147,39 +154,27 @@ def steerContorl():
 def weapon1Control(): 
 	state = request.args.get("state")
 	if state == "run":
-		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC, int(Clamp(1400+10*50,1400,1900)))
+		#velocity = int(request.args.get("vel")) #0~10 from mobile.
+		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(1400+10*50,1400,1900)))
 	elif state == "stop":
-		pi.set_servo_pulsewidth(ESC, 1400)
+		pi.set_servo_pulsewidth(ESC_WEAPON, 1400)
 	else: 
-		pi.set_servo_pulsewidth(ESC, 1400)
+		pi.set_servo_pulsewidth(ESC_WEAPON, 1400)
 	return "Checked: " + state
  
 @app.route("/camera")
 def cameraControl():
 	global Camera_X,Camera_Y
 	dir = request.args.get("dir")
-	velocity = int(request.args.get("vel")) #0~10, 0~5/2 
+	velocity = int(request.args.get("vel"))*10 #0~10, 0~5/2 
 	if dir == "up":
 		Camera_Y = int(Clamp(Camera_Y-velocity,Camera_Y_MIN,Camera_Y_MAX))
 	elif dir == "down":
-		Camera_Y = int(Clamp(Camera_Y-velocity,Camera_Y_MIN,Camera_Y_MAX))
+		Camera_Y = int(Clamp(Camera_Y+velocity,Camera_Y_MIN,Camera_Y_MAX))
 	elif dir == "left":
-		Camera_X = int(Clamp(Camera_X-velocity,Camera_X_MIN,Camera_X_MAX))
+		Camera_X = int(Clamp(Camera_X+velocity,Camera_X_MIN,Camera_X_MAX))
 	elif dir == "right":
 		Camera_X = int(Clamp(Camera_X-velocity,Camera_X_MIN,Camera_X_MAX))
-	# elif dir == "upright":
-	# 	Camera_Y = int(Clamp(Camera_Y-velocity,Camera_Y_MIN,Camera_Y_MAX))
-	# 	Camera_X = int(Clamp(Camera_X-velocity,Camera_X_MIN,Camera_X_MAX))
-	# elif dir == "upleft":
-	# 	Camera_Y = int(Clamp(Camera_Y-velocity,Camera_Y_MIN,Camera_Y_MAX))
-	# 	Camera_X = int(Clamp(Camera_X+velocity,Camera_X_MIN,Camera_X_MAX))
-	# elif dir == "downright":
-	# 	Camera_Y = int(Clamp(Camera_Y+velocity,Camera_Y_MIN,Camera_Y_MAX))
-	# 	Camera_X = int(Clamp(Camera_X-velocity,Camera_X_MIN,Camera_X_MAX))
-	# elif dir == "downleft":
-	# 	Camera_Y = int(Clamp(Camera_Y+velocity,Camera_Y_MIN,Camera_Y_MAX))
-	# 	Camera_X = int(Clamp(Camera_X+velocity,Camera_X_MIN,Camera_X_MAX))
 	pi.set_servo_pulsewidth(CAMERA_X,Camera_X) # pin, pwm
 	pi.set_servo_pulsewidth(CAMERA_Y,Camera_Y) # pin, pwm
 	return "steered"
