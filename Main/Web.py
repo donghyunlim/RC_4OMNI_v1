@@ -11,13 +11,20 @@ time.sleep(1) # As i said it is too impatient and so if this delay is removed yo
 import pigpio #importing GPIO library
 # Raspberry Pi PWN PIN 12, 13, 18, 19
 import RegistrationToSvr
+import SmoothGpioController
+# import GpioController
+import HeartBeatToSvr
 
-ESC=4
+
+ESC=12 #Main Motor
 ESC_WEAPON=5
 
 CAMERA_X = 22
 CAMERA_Y = 23
 STEER = 27
+
+INJORA35T_STOP=1500 #should be init. (by manually)
+INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
 
 Camera_X_MAX = 2500 # 2520, on origin code
 Camera_X_MIN = 520
@@ -28,9 +35,25 @@ Camera_X = 1520
 Camera_Y = 1000
 
 pi = pigpio.pi()
-pi.set_servo_pulsewidth(ESC, 0) 
+pi.set_servo_pulsewidth(ESC, INJORA35T_STOP) 
+gpioController = SmoothGpioController.GpioController() #GPIO fast-serized queue system(sort of)
+# gpioController = GpioController.GpioController() #GPIO fast-serized queue system(sort of)
+gpioController.setOurDefaultPWM(INJORA35T_STOP, INJORA35T_WIDTH)
+gpioController.popDequePeriodically()
 
+#Server Matters
 RegistrationToSvr.__name__ #Do registration work to onff local server.
+registratorVariableGetter = RegistrationToSvr.Getter()
+heartbeater = HeartBeatToSvr.HeartBeating()
+# heartbeater.setMyInfo("a","a","a","a","a")
+heartbeater.setMyInfo(
+	registratorVariableGetter.getMyType(),
+	registratorVariableGetter.getPrivIP(),
+	registratorVariableGetter.getPublibcIP(),
+	registratorVariableGetter.getMyPrefferedWebSvrPort(),
+	registratorVariableGetter.getMyPrefferedMediaSvrPort()
+)
+heartbeater.heartbeating()
 
 app = Flask(__name__)
 
@@ -54,7 +77,7 @@ def arm():
 	pi.set_servo_pulsewidth(ESC_WEAPON, 1500)
 	# pi.set_PWM_frequency(ESC_WEAPON,50)
 	#movement
-	pi.set_servo_pulsewidth(ESC, 1500)
+	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 	pi.set_PWM_frequency(STEER,50)
 	pi.set_servo_pulsewidth(STEER,0)
 	#camera
@@ -120,29 +143,37 @@ def motorControl():
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC, int(Clamp(1500-velocity*40,1100,1500)))
-	elif state == "rear":
+		pwm = int(Clamp(INJORA35T_STOP-velocity*INJORA35T_WIDTH
+			,INJORA35T_STOP - (INJORA35T_WIDTH*10)
+			,INJORA35T_STOP))
+		gpioController.gpio_PIN_PWM(ESC, pwm)
+	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC, int(Clamp(1500+velocity*40,1500,1900)))
+		pwm = int(Clamp(INJORA35T_STOP+velocity*INJORA35T_WIDTH
+			,INJORA35T_STOP
+			,INJORA35T_STOP + (INJORA35T_WIDTH*10)))
+		gpioController.gpio_PIN_PWM(ESC, pwm)
 	elif state == "stop":
-		pi.set_servo_pulsewidth(ESC, 1500)
+		gpioController.gpio_PIN_PWM(ESC, INJORA35T_STOP)
 	else: 
-		pi.set_servo_pulsewidth(ESC, 1500)
-	return "Checked: " + state
+		gpioController.gpio_PIN_PWM(ESC, INJORA35T_STOP)
+	return ""
 	
 #good
 @app.route("/steer")
 def steerContorl():
 	dir = request.args.get("dir")
+	aligned = 2050 #2050 중립 +-200
+	moveTo = 200
 	if dir == "right":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(1500+velocity*30,1200,1500)))
-		# pi.set_servo_pulsewidth(STEER, int(Clamp(1710+velocity,1710,1720)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(aligned+velocity*20,aligned,aligned+moveTo)))
+		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500+velocity*30,1500,1800)))
 		# pi.set_servo_pulsewidth(STEER,1720)
 	elif dir == "left":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(1500-velocity*30,1500,1800)))
-		# pi.set_servo_pulsewidth(STEER, int(Clamp(1310-velocity,1310,1320)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(aligned-velocity*20,aligned-moveTo,aligned)))
+		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500-velocity*10,1320,1500)))
 		# pi.set_servo_pulsewidth(STEER,1320)
 	elif dir == "straight": #not use
 		# pi.set_servo_pulsewidth(STEER, int(Clamp(1510+velocity,1510,1520)))
