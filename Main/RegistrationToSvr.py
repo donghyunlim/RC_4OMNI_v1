@@ -18,7 +18,7 @@ def getserial():
 
 
 SVR_BASE_ADDR = 'http://onffworld.iptime.org:33774' #todo: https 보안 스트림으로의 업그레이드
-RESTFUL_EXPRESSION = '/registration/rc'
+RESTFUL_EXPRESSION = '/rc'
 # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION)
 
 typeOfRc = 'Rc4WheelV1'
@@ -38,7 +38,7 @@ wantedDdnsWebsvrPort = 25000+int(ipaddrLastThree[3])
 
 infos = {'type_of_rc': typeOfRc, 'serial_of_rc': getserial(), 'ipv4_private': ipv4Private, 'ipv4_public':ipv4Public
           , 'wanted_ddns_websvr_port':wantedDdnsWebsvrPort, 'wanted_ddns_mediasvr_port':wantedDdnsMediasvrPort}
-response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, data=infos)
+response = requests.put(SVR_BASE_ADDR+RESTFUL_EXPRESSION, data=infos)
 
 try:
     response.raise_for_status()
