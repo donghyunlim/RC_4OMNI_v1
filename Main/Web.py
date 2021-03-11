@@ -17,7 +17,7 @@ import HeartBeatToSvr
 
 
 ESC=12 #Main Motor
-ESC_WEAPON=5
+ESC_WEAPON=18
 
 CAMERA_X = 22
 CAMERA_Y = 23
@@ -36,24 +36,26 @@ Camera_Y = 1000
 
 pi = pigpio.pi()
 pi.set_servo_pulsewidth(ESC, INJORA35T_STOP) 
-gpioController = SmoothGpioController.GpioController() #GPIO fast-serized queue system(sort of)
+pi.set_PWM_frequency(ESC,500) #supersafe -> 50hz
+pi.set_PWM_frequency(ESC_WEAPON,50) #supersafe -> 50hz
+
 # gpioController = GpioController.GpioController() #GPIO fast-serized queue system(sort of)
+gpioController = SmoothGpioController.GpioController() #GPIO fast-serized queue system(sort of)
 gpioController.setOurDefaultPWM(INJORA35T_STOP, INJORA35T_WIDTH)
 gpioController.popDequePeriodically()
 
 #Server Matters
-RegistrationToSvr.__name__ #Do registration work to onff local server.
-registratorVariableGetter = RegistrationToSvr.Getter()
-heartbeater = HeartBeatToSvr.HeartBeating()
-# heartbeater.setMyInfo("a","a","a","a","a")
-heartbeater.setMyInfo(
-	registratorVariableGetter.getMyType(),
-	registratorVariableGetter.getPrivIP(),
-	registratorVariableGetter.getPublibcIP(),
-	registratorVariableGetter.getMyPrefferedWebSvrPort(),
-	registratorVariableGetter.getMyPrefferedMediaSvrPort()
-)
-heartbeater.heartbeating()
+# RegistrationToSvr.__name__ #Do registration work to onff local server.
+# registratorVariableGetter = RegistrationToSvr.Getter()
+# heartbeater = HeartBeatToSvr.HeartBeating()
+# heartbeater.setMyInfo(
+# 	registratorVariableGetter.getMyType(),
+# 	registratorVariableGetter.getPrivIP(),
+# 	registratorVariableGetter.getPublibcIP(),
+# 	registratorVariableGetter.getMyPrefferedWebSvrPort(),
+# 	registratorVariableGetter.getMyPrefferedMediaSvrPort()
+# )
+# heartbeater.heartbeating()
 
 app = Flask(__name__)
 
@@ -71,45 +73,27 @@ def Clamp(val,vMin,vMax):
 def connectionCheck(): 
 	return "working Fine"
 	
-@app.route("/arm")
+@app.route("/init")
 def arm():  
+	pi.set_PWM_frequency(ESC,50)
+	gpioController.gpio_PIN_PWM(ESC, 1500) # stop
+	gpioController.gpio_PIN_PWM(ESC_WEAPON, 1500) # stop
 	#weapon
+	pi.set_PWM_frequency(ESC_WEAPON,50) # 20 times per a second.
 	pi.set_servo_pulsewidth(ESC_WEAPON, 1500)
 	# pi.set_PWM_frequency(ESC_WEAPON,50)
 	#movement
 	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 	pi.set_PWM_frequency(STEER,50)
-	pi.set_servo_pulsewidth(STEER,0)
+	pi.set_servo_pulsewidth(STEER, 1500)
 	#camera
 	pi.set_PWM_frequency(CAMERA_X,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
-	pi.set_servo_pulsewidth(CAMERA_X,1520) #1.52ms, 500(min) - 2500(max)
+	pi.set_servo_pulsewidth(CAMERA_X,1500) #500(min) - 2500(max)
 	pi.set_PWM_frequency(CAMERA_Y,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
-	pi.set_servo_pulsewidth(CAMERA_Y,1520)
-	time.sleep(1)
+	pi.set_servo_pulsewidth(CAMERA_Y,1500)
+	time.sleep(100)
 	return "ready"
 	
-@app.route("/intialize")
-def initialize():
-	pi.set_servo_pulsewidth(ESC, 0)
-	print("Disconnect the battery")
-	time.sleep(1)
-	pi.set_servo_pulsewidth(ESC, max_value)
-	print("Connect the battery NOW.. you will here two beeps, then wait for a gradual falling tone then press Enter")
-	time.sleep(2)
-	pi.set_servo_pulsewidth(ESC, min_value)
-	print ("Wierd eh! Special tone")
-	time.sleep(7)
-	print ("Wait for it ....")
-	time.sleep (5)
-	print ("Im working on it, DONT WORRY JUST WAIT.....")
-	pi.set_servo_pulsewidth(ESC, 0)
-	time.sleep(2)
-	print ("Arming ESC now...")
-	pi.set_servo_pulsewidth(ESC, min_value)
-	time.sleep(1)
-	print ("See.... uhhhhh")
-            
-
 # @app.route("/moving")
 # def movingCar():
 # 	dir = request.args.get("dir")
@@ -163,16 +147,16 @@ def motorControl():
 @app.route("/steer")
 def steerContorl():
 	dir = request.args.get("dir")
-	aligned = 2050 #2050 중립 +-200
+	# aligned = 2050 #2050 중립 +-200
 	moveTo = 200
 	if dir == "right":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(aligned+velocity*20,aligned,aligned+moveTo)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(INJORA35T_STOP+velocity*20,INJORA35T_STOP,INJORA35T_STOP+moveTo)))
 		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500+velocity*30,1500,1800)))
 		# pi.set_servo_pulsewidth(STEER,1720)
 	elif dir == "left":
 		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(aligned-velocity*20,aligned-moveTo,aligned)))
+		pi.set_servo_pulsewidth(STEER, int(Clamp(INJORA35T_STOP-velocity*20,INJORA35T_STOP-moveTo,INJORA35T_STOP)))
 		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500-velocity*10,1320,1500)))
 		# pi.set_servo_pulsewidth(STEER,1320)
 	elif dir == "straight": #not use
@@ -181,16 +165,16 @@ def steerContorl():
 	return "steered"
 
 #WEAPON1_blade
-@app.route("/weapon1")
+@app.route("/weapon1") #1500, 500 2500
 def weapon1Control(): 
 	state = request.args.get("state")
 	if state == "run":
 		#velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(1400+10*50,1400,1900)))
+		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(INJORA35T_STOP+10*100,500,2500)))
 	elif state == "stop":
-		pi.set_servo_pulsewidth(ESC_WEAPON, 1400)
+		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	else: 
-		pi.set_servo_pulsewidth(ESC_WEAPON, 1400)
+		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	return "Checked: " + state
  
 @app.route("/camera")
