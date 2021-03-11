@@ -181,7 +181,7 @@ def weapon1Control():
 
 #Blade
 @app.route("/esc_weapon")
-def motorControl(): 
+def escWeaponControl(): 
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
