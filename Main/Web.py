@@ -45,17 +45,17 @@ gpioController.setOurDefaultPWM(INJORA35T_STOP, INJORA35T_WIDTH)
 gpioController.popDequePeriodically()
 
 #Server Matters
-# RegistrationToSvr.__name__ #Do registration work to onff local server.
-# registratorVariableGetter = RegistrationToSvr.Getter()
-# heartbeater = HeartBeatToSvr.HeartBeating()
-# heartbeater.setMyInfo(
-# 	registratorVariableGetter.getMyType(),
-# 	registratorVariableGetter.getPrivIP(),
-# 	registratorVariableGetter.getPublibcIP(),
-# 	registratorVariableGetter.getMyPrefferedWebSvrPort(),
-# 	registratorVariableGetter.getMyPrefferedMediaSvrPort()
-# )
-# heartbeater.heartbeating()
+RegistrationToSvr.__name__ #Do registration work to onff local server.
+registratorVariableGetter = RegistrationToSvr.Getter()
+heartbeater = HeartBeatToSvr.HeartBeating()
+heartbeater.setMyInfo(
+	registratorVariableGetter.getMyType(),
+	registratorVariableGetter.getPrivIP(),
+	registratorVariableGetter.getPublibcIP(),
+	registratorVariableGetter.getMyPrefferedWebSvrPort(),
+	registratorVariableGetter.getMyPrefferedMediaSvrPort()
+)
+heartbeater.heartbeating()
 
 app = Flask(__name__)
 
