@@ -77,13 +77,12 @@ def connectionCheck():
 def arm():  
 	pi.set_PWM_frequency(ESC,50)
 	gpioController.gpio_PIN_PWM(ESC, 1500) # stop
-	gpioController.gpio_PIN_PWM(ESC_WEAPON, 1500) # stop
+	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 	#weapon
 	pi.set_PWM_frequency(ESC_WEAPON,50) # 20 times per a second.
-	pi.set_servo_pulsewidth(ESC_WEAPON, 1500)
-	# pi.set_PWM_frequency(ESC_WEAPON,50)
+	gpioController.gpio_PIN_PWM(ESC_WEAPON, 1500) # stop
+	pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	#movement
-	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 	pi.set_PWM_frequency(STEER,50)
 	pi.set_servo_pulsewidth(STEER, 1500)
 	#camera
@@ -168,14 +167,39 @@ def steerContorl():
 @app.route("/weapon1") #1500, 500 2500
 def weapon1Control(): 
 	state = request.args.get("state")
-	if state == "run":
+	if state == "left":
 		#velocity = int(request.args.get("vel")) #0~10 from mobile.
 		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(INJORA35T_STOP+10*100,500,2500)))
+	if state == "right":
+		#velocity = int(request.args.get("vel")) #0~10 from mobile.
+		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(INJORA35T_STOP-10*100,500,2500)))
 	elif state == "stop":
 		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	else: 
 		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	return "Checked: " + state
+
+#Blade
+@app.route("/esc_weapon")
+def escWeaponControl(): 
+	state = request.args.get("state")
+	if state == "forward":
+		velocity = int(request.args.get("vel")) #0~10 from mobile.
+		pwm = int(Clamp(INJORA35T_STOP-velocity*INJORA35T_WIDTH
+			,INJORA35T_STOP - (INJORA35T_WIDTH*10)
+			,INJORA35T_STOP))
+		gpioController.gpio_PIN_PWM(ESC_WEAPON, pwm)
+	elif state == "backward":
+		velocity = int(request.args.get("vel")) #0~10 from mobile.
+		pwm = int(Clamp(INJORA35T_STOP+velocity*INJORA35T_WIDTH
+			,INJORA35T_STOP
+			,INJORA35T_STOP + (INJORA35T_WIDTH*10)))
+		gpioController.gpio_PIN_PWM(ESC_WEAPON, pwm)
+	elif state == "stop":
+		gpioController.gpio_PIN_PWM(ESC_WEAPON, INJORA35T_STOP)
+	else: 
+		gpioController.gpio_PIN_PWM(ESC_WEAPON, INJORA35T_STOP)
+	return ""
  
 @app.route("/camera")
 def cameraControl():
