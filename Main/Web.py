@@ -14,7 +14,7 @@ import RegistrationToSvr
 import SmoothGpioController
 # import GpioController
 import HeartBeatToSvr
-
+import LedController
 
 ESC=12 #Main Motor
 ESC_WEAPON=18
@@ -56,6 +56,9 @@ heartbeater.setMyInfo(
 	registratorVariableGetter.getMyPrefferedMediaSvrPort()
 )
 heartbeater.heartbeating()
+
+#Led Controller (ws2812, neopixel)
+ledController = LedController.LedControl()
 
 app = Flask(__name__)
 
@@ -119,6 +122,12 @@ def arm():
 # 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500+velocity*40,1500,1900)))
 # 		pi.set_servo_pulsewidth(STEER, int(Clamp(1310+velocity,1310,1320)))
 # 	return "moved"
+
+#hit by other
+@app.route("/damaged", methods = ['GET', 'POST'])
+def damaged():
+	ledController.setTargetBright(255,0,0)
+	ledController.blinkingAndDimming(4)
 
 #good
 @app.route("/motor")
