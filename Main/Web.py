@@ -62,6 +62,8 @@ ledController = LedController.LedControl()
 
 app = Flask(__name__)
 
+onUse = False
+
 def Clamp(val,vMin,vMax):
 	if  val > vMin and val < vMax:
 		return val
@@ -226,6 +228,13 @@ def cameraControl():
 	pi.set_servo_pulsewidth(CAMERA_X,Camera_X) # pin, pwm
 	pi.set_servo_pulsewidth(CAMERA_Y,Camera_Y) # pin, pwm
 	return "steered"
+
+#little awkward api, but I'm quite sure that this is the best choice 
+#untill we gets 'perfect lifecycle smartphone client'.
+@app.route("/onusing")
+def onUse():
+	onUse = True
+
 if __name__ == "__main__":
 	app.run(host="0.0.0.0")
 

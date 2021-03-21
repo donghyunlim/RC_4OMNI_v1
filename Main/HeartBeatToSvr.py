@@ -17,16 +17,22 @@ class HeartBeating():
         global publicIP
         global websvrPort
         global mediasvrPort
+        global onUse
         rctype = _rctype
         privIP = _privIP
         publicIP = _publicIP
         websvrPort = _websvrPort
         mediasvrPort = _mediasvrPort
+        onUse = True
+
+    def setOnUseTo(self, booleanValue):
+        if(onUse != booleanValue):
+            onUse = booleanValue
             
     def heartbeating(self):
         try:
             infos = {'type_of_rc': rctype, 'serial_of_rc': RegistrationToSvr.getserial(), 'ipv4_private': privIP, 'ipv4_public':publicIP
-            , 'wanted_ddns_websvr_port':websvrPort, 'wanted_ddns_mediasvr_port':mediasvrPort}
+            , 'wanted_ddns_websvr_port':websvrPort, 'wanted_ddns_mediasvr_port':mediasvrPort, 'on_use':onUse}
             response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, params=infos) #can be params, or simply json.
             # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, data=infos)
             try:
@@ -42,7 +48,7 @@ class HeartBeating():
                 print('bam! error occured while connecting to the static server')
 
             print("Send my alive signal to server ==>  "+SVR_BASE_ADDR+RESTFUL_EXPRESSION)
-            threading.Timer(55, self.heartbeating).start() #every 55(60)seconds (we need latency*2+5% more rapidly)
+            threading.Timer(5, self.heartbeating).start() #change to every 5 sec, for usage check reason.///every 55(60)seconds (we need latency*2+5% more rapidly)
         except:
             print('Heartbeater : Cannot connect to our server(or web), retry after 5 secs')
             sleep(5) #5 sec to retry
