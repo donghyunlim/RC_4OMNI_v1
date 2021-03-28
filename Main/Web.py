@@ -16,27 +16,28 @@ import SmoothGpioController
 import HeartBeatToSvr
 import LedController
 
+##PIN MAP
 ESC=12 #Main Motor
-ESC_WEAPON=18
-
-CAMERA_X = 22
-CAMERA_Y = 23
-STEER = 27
+ESC_WEAPON=18 #ESC used weapon
+CAMERA_X = 22 #cam x
+CAMERA_Y = 23 #cam y
+STEER = 27 #steering servo
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
 
 Camera_X_MAX = 2500 # 2520, on origin code
 Camera_X_MIN = 520
-Camera_Y_MAX = 1520
+Camera_Y_MAX = 1500
 Camera_Y_MIN = 800
 
-Camera_X = 1520
+Camera_X = 1500
 Camera_Y = 1000
 
 pi = pigpio.pi()
-pi.set_servo_pulsewidth(ESC, INJORA35T_STOP) 
-pi.set_PWM_frequency(ESC,500) #supersafe -> 50hz
+pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
+pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
+pi.set_PWM_frequency(ESC,500) #supersafe -> 50hz, spec -> 500hz
 pi.set_PWM_frequency(ESC_WEAPON,50) #supersafe -> 50hz
 
 # gpioController = GpioController.GpioController() #GPIO fast-serized queue system(sort of)
@@ -62,8 +63,6 @@ ledController = LedController.LedControl()
 
 app = Flask(__name__)
 
-onUse = False
-
 def Clamp(val,vMin,vMax):
 	if  val > vMin and val < vMax:
 		return val
@@ -77,10 +76,16 @@ def Clamp(val,vMin,vMax):
 @app.route("/")
 def connectionCheck(): 
 	return "working Fine"
-	
+
+@app.route("/join_room")
+def joinRoom():
+	RegistrationToSvr.joinToGame()
+	return "true"
+
 @app.route("/init")
 def arm():  
-	pi.set_PWM_frequency(ESC,50)
+	#motor
+	pi.set_PWM_frequency(ESC,500)
 	gpioController.gpio_PIN_PWM(ESC, 1500) # stop
 	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 	#weapon
@@ -98,33 +103,6 @@ def arm():
 	time.sleep(100)
 	return "ready"
 	
-# @app.route("/moving")
-# def movingCar():
-# 	dir = request.args.get("dir")
-# 	if dir == "gostraight":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500-velocity*40,1100,1500)))
-# 	elif dir == "goright":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500-velocity*40,1100,1500)))
-# 		pi.set_servo_pulsewidth(STEER, int(Clamp(1710+velocity,1710,1720)))
-# 	elif dir == "goleft":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500-velocity*40,1100,1500)))
-# 		pi.set_servo_pulsewidth(STEER, int(Clamp(1310+velocity,1310,1320)))
-# 	elif dir == "backstraight":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500+velocity*40,1500,1900)))
-# 	elif dir == "backright":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500+velocity*40,1500,1900)))
-# 		pi.set_servo_pulsewidth(STEER, int(Clamp(1710+velocity,1710,1720)))
-# 	elif dir == "backleft":
-# 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-# 		pi.set_servo_pulsewidth(ESC, int(Clamp(1500+velocity*40,1500,1900)))
-# 		pi.set_servo_pulsewidth(STEER, int(Clamp(1310+velocity,1310,1320)))
-# 	return "moved"
-
 #hit by other
 @app.route("/damaged", methods = ['GET', 'POST'])
 def damaged():
@@ -233,7 +211,9 @@ def cameraControl():
 #untill we gets 'perfect lifecycle smartphone client'.
 @app.route("/onusing")
 def onUse():
-	onUse = True
+	# heartbeater.setOnUseWithTimer(True)
+	heartbeater.onUse = True
+	return "true"
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0")

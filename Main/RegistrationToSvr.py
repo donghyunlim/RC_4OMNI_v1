@@ -20,6 +20,8 @@ def getserial():
 
 SVR_BASE_ADDR = 'http://onffworld.iptime.org:33774' #todo: https 보안 스트림으로의 업그레이드
 RESTFUL_EXPRESSION = '/rc'
+RESTFUL_EXPRESSION_JOIN = '/join/rc'
+
 # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION)
 typeOfRc = 'Rc4WheelV1'
 
@@ -62,6 +64,23 @@ def setInfoToWebsvr():
     setInfoToWebsvr()#do nothing, just retry.
 
 setInfoToWebsvr()
+
+def joinToGame():
+  try:
+    infos = {'type_of_rc': typeOfRc, 'serial_of_rc': getserial()}
+    response = requests.put(SVR_BASE_ADDR+RESTFUL_EXPRESSION_JOIN, data=infos)
+
+    try:
+        response.raise_for_status()
+        if(response.status_code == 200 or response.status_code == 201): #정상
+            print('all good! regi success')
+        else: #비정상, 반영실패 응답. 특히 202
+            print('server alive but went wrong. maybe there are some mistaken things?')
+        
+    except requests.exceptions.HTTPError as e:
+        print('bam! error occured while connecting to the static server')
+  except:
+    print('Cannot connect to our server(or web), retry after 5 secs')
 
 #interface for another code.
 class Getter():
