@@ -17,42 +17,16 @@ class HeartBeating():
         global publicIP
         global websvrPort
         global mediasvrPort
-        global onUse
         rctype = _rctype
         privIP = _privIP
         publicIP = _publicIP
         websvrPort = _websvrPort
         mediasvrPort = _mediasvrPort
-        onUse = False
-
-#not working so well
-    def setOnUseWithTimer(self, booleanValue):
-        # if(onUse != booleanValue):
-        self.onUse = booleanValue
-        if(booleanValue is True):
-            self.setOnUseTimer()
-            print("set onuse to true")
-#not working so well
-    def setOnUseTo(self, booleanValue):
-        onUse = booleanValue
-        print("set to false")
-#not working so well
-    #30sec timer to expire
-    def setOnUseTimer(self):
-        try:
-            print("timer reset")
-            timer.cancel()
-            timer.start()
-        except:
-            print("timer new start")
-            timer = threading.Timer(4, self.setOnUseTo,args=(False,)).start()
-            # self.timer = threading.Timer(30, self.setOnUseTo(False))
             
     def heartbeating(self):
         try:
-            # print("!!!!!!!!!!!!!!!!!!!onusestatus:"+str(onUse))
             infos = {'type_of_rc': rctype, 'serial_of_rc': RegistrationToSvr.getserial(), 'ipv4_private': privIP, 'ipv4_public':publicIP
-            , 'wanted_ddns_websvr_port':websvrPort, 'wanted_ddns_mediasvr_port':mediasvrPort, 'on_use':onUse}
+            , 'wanted_ddns_websvr_port':websvrPort, 'wanted_ddns_mediasvr_port':mediasvrPort}
             response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, params=infos) #can be params, or simply json.
             # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, data=infos)
             try:

@@ -15,6 +15,7 @@ import SmoothGpioController
 # import GpioController
 import HeartBeatToSvr
 import LedController
+import requests
 
 ##PIN MAP
 ESC=12 #Main Motor
@@ -211,9 +212,24 @@ def cameraControl():
 #untill we gets 'perfect lifecycle smartphone client'.
 @app.route("/onusing")
 def onUse():
-	# heartbeater.setOnUseWithTimer(True)
-	heartbeater.onUse = True
-	return "true"
+	status = request.args.get("status")
+	SVR_BASE_ADDR = 'http://onffworld.iptime.org:48080' #todo: https 보안 스트림으로의 업그레이드
+	RESTFUL_EXPRESSION = '/rc/onuse'
+	infos = {'type_of_rc':RegistrationToSvr.Getter().getMyType(),'serial_of_rc':RegistrationToSvr.getserial(),'on_use': status}
+	response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, params=infos) #can be params, or simply json.
+	# response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION, data=infos)
+	try:
+		response.raise_for_status()
+		if(response.status_code == 200 or response.status_code == 201): #good
+			pass
+			# print('all good!')
+		else: #not good, but received anyway.
+			pass
+			# print('server alive but went wrong. maybe there are some mistaken things?')
+		
+	except requests.exceptions.HTTPError as e:
+		print('bam! error occured while connecting to the static server')
+	return status
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0")

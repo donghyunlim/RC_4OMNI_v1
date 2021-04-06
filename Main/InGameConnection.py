@@ -8,6 +8,7 @@ except ImportError:
     import _thread as thread
 import time
 import RegistrationToSvr
+import Web
 
 deviceCodeName = RegistrationToSvr.Getter().getMyType()+"-"+RegistrationToSvr.getserial()
 
