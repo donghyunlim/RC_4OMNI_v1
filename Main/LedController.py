@@ -66,6 +66,15 @@ class LedControl():
         self.lastG = green
         self.lastB = blue
 
+    def blinking(self, times):
+        for i in range(0,times):
+            pixels.fill((self.lastR,0,0))
+            pixels.show()
+            time.sleep(0.1)
+            pixels.fill((0,0,0))
+            pixels.show()
+            time.sleep(0.1)
+
     def blinkingAndDimming(self, times):
         for i in range(0,times):
             pixels.fill((self.lastR,0,0))
