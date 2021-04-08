@@ -19,7 +19,8 @@ import requests
 
 ##PIN MAP
 ESC=12 #Main Motor
-ESC_WEAPON=18 #ESC used weapon
+ESC_WEAPON=15 #ESC used weapon
+SERVO_WEAPON_1=18
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
 STEER = 27 #steering servo
@@ -159,14 +160,14 @@ def weapon1Control():
 	state = request.args.get("state")
 	if state == "left":
 		#velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(INJORA35T_STOP+10*100,500,2500)))
+		pi.set_servo_pulsewidth(SERVO_WEAPON_1, int(Clamp(INJORA35T_STOP+10*100,500,2500)))
 	if state == "right":
 		#velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_servo_pulsewidth(ESC_WEAPON, int(Clamp(INJORA35T_STOP-10*100,500,2500)))
+		pi.set_servo_pulsewidth(SERVO_WEAPON_1, int(Clamp(INJORA35T_STOP-10*100,500,2500)))
 	elif state == "stop":
-		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
+		pi.set_servo_pulsewidth(SERVO_WEAPON_1, INJORA35T_STOP)
 	else: 
-		pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
+		pi.set_servo_pulsewidth(SERVO_WEAPON_1, INJORA35T_STOP)
 	return "Checked: " + state
 
 #Blade
