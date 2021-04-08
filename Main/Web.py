@@ -20,7 +20,7 @@ import requests
 ##PIN MAP
 ESC=12 #Main Motor
 ESC_WEAPON=15 #ESC used weapon
-SERVO_WEAPON_1=18
+SERVO_WEAPON_1=18 #Servo used weapon
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
 STEER = 27 #steering servo
@@ -90,13 +90,16 @@ def arm():
 	pi.set_PWM_frequency(ESC,500)
 	gpioController.gpio_PIN_PWM(ESC, 1500) # stop
 	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
-	#weapon
+	#weapon(esc)
 	pi.set_PWM_frequency(ESC_WEAPON,50) # 20 times per a second.
 	gpioController.gpio_PIN_PWM(ESC_WEAPON, 1500) # stop
 	pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	#movement
 	pi.set_PWM_frequency(STEER,50)
 	pi.set_servo_pulsewidth(STEER, 1500)
+	#weapon(servo)
+	pi.set_PWM_frequency(SERVO_WEAPON_1,50) # 20 times per a second.
+	pi.set_servo_pulsewidth(SERVO_WEAPON_1, INJORA35T_STOP)
 	#camera
 	pi.set_PWM_frequency(CAMERA_X,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
 	pi.set_servo_pulsewidth(CAMERA_X,1500) #500(min) - 2500(max)
