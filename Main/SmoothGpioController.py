@@ -60,6 +60,7 @@ class GpioController():
 
             # print("deque gpio command!"+" pin:"+str(pin)+"  pwm: "+str(pwm))
             # print("diff"+str((gpioLastPWM[pin]-pwm)))
+            # print("Current PWM"+str((gpioLastPWM[pin])))
             if( (gpioLastPWM[pin]-pwm) > PWM_1_TICK):
                 gpioDeque.appendleft(pwm)
                 gpioDeque.appendleft(pin)
