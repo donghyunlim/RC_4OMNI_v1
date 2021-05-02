@@ -16,6 +16,7 @@ import SmoothGpioController
 import HeartBeatToSvr
 import LedController
 import requests
+from threading import Timer
 
 ##PIN MAP
 ESC=12 #Main Motor
@@ -23,6 +24,7 @@ ESC_WEAPON=15 #ESC used weapon
 SERVO_WEAPON_1=18 #Servo used weapon
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
+KICK_SOLENOID = 24 #cam y
 STEER = 27 #steering servo
 
 INJORA35T_STOP=1500 #should be init. (by manually)
@@ -176,6 +178,20 @@ def weapon1Control():
 		pi.set_servo_pulsewidth(SERVO_WEAPON_1, INJORA35T_STOP)
 	return "Checked: " + state
 
+#kick_solenoid
+@app.route("/kick_solenoid") #1500, 500 2500
+def kickSolenoid(): 
+	state = request.args.get("state")
+	if state == "run":
+		pi.write(KICK_SOLENOID, 1)
+		solenoidStopTimer = Timer(1, kickSolenoidStop)
+		solenoidStopTimer.start()
+	elif state == "stop":
+		pi.write(KICK_SOLENOID, 0)
+	else: 
+		pi.write(KICK_SOLENOID, 0)
+	return "Checked: " + state
+
 #Blade
 @app.route("/esc_weapon")
 def escWeaponControl(): 
@@ -238,6 +254,9 @@ def onUse():
 		print('bam! error occured while connecting to the static server')
 	return status
 
+def kickSolenoidStop():
+	pi.write(KICK_SOLENOID, 0)
+	# print('kick solenoid stop')
+
 if __name__ == "__main__":
 	app.run(host="0.0.0.0")
-
