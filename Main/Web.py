@@ -184,7 +184,7 @@ def kickSolenoid():
 	state = request.args.get("state")
 	if state == "run":
 		pi.write(KICK_SOLENOID, 1)
-		solenoidStopTimer = Timer(0.5, kickSolenoidStop)
+		solenoidStopTimer = Timer(0.15, kickSolenoidStop)
 		solenoidStopTimer.start()
 	elif state == "stop":
 		pi.write(KICK_SOLENOID, 0)
