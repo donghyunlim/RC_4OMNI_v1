@@ -29,7 +29,7 @@ STEER = 27 #steering servo
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
-INJORA35T_OFFSET_MIN_WORK_PWM=160 #Offset for minimum work(starts rotate) PWM
+INJORA35T_OFFSET_MIN_WORK_PWM=70 #Offset for minimum work(starts rotate) (21T PWM 70) for now
 
 Camera_X_MAX = 2500 # 2520, on origin code
 Camera_X_MIN = 520
@@ -123,14 +123,14 @@ def motorControl():
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP-INJORA35T_OFFSET_MIN_WORK_PWM-velocity*(INJORA35T_WIDTH/2) #targets 1340 ~ 1180
+		pwm = int(Clamp(INJORA35T_STOP-INJORA35T_OFFSET_MIN_WORK_PWM-velocity*(INJORA35T_WIDTH/2.5) #21t targets 1430 ~ 1302
 		# pwm = int(Clamp(INJORA35T_STOP-velocity*INJORA35T_WIDTH #targets 1500 ~ 1100
 			,INJORA35T_STOP - (INJORA35T_WIDTH*10)
 			,INJORA35T_STOP))
 		gpioController.gpio_PIN_PWM(ESC, pwm)
 	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP+INJORA35T_OFFSET_MIN_WORK_PWM+velocity*(INJORA35T_WIDTH/2) #targets 1660 ~ 1820
+		pwm = int(Clamp(INJORA35T_STOP+INJORA35T_OFFSET_MIN_WORK_PWM+velocity*(INJORA35T_WIDTH/2.5) #21t targets 1570 ~ 1698
 		# pwm = int(Clamp(INJORA35T_STOP+velocity*INJORA35T_WIDTH #targets 1500 ~ 1900
 			,INJORA35T_STOP
 			,INJORA35T_STOP + (INJORA35T_WIDTH*10)))
