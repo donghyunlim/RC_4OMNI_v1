@@ -123,14 +123,14 @@ def motorControl():
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP-INJORA35T_OFFSET_MIN_WORK_PWM-velocity*(INJORA35T_WIDTH/2) #21t targets 1430~1270   #2.5(1430 ~ 1302) was too slow, but work as solid.
+		pwm = int(Clamp(INJORA35T_STOP-INJORA35T_OFFSET_MIN_WORK_PWM-velocity*(INJORA35T_WIDTH/1.35) #21t targets 1430~1430-(40/1.35*8)   #2.5(1430 ~ 1302) was too slow, but work as solid.
 		# pwm = int(Clamp(INJORA35T_STOP-velocity*INJORA35T_WIDTH #targets 1500 ~ 1100
 			,INJORA35T_STOP - (INJORA35T_WIDTH*10)
 			,INJORA35T_STOP))
 		gpioController.gpio_PIN_PWM(ESC, pwm)
 	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP+INJORA35T_OFFSET_MIN_WORK_PWM+velocity*(INJORA35T_WIDTH/2) #21t targets 1570 ~ 1730    #2.5(1570 ~ 1698) was too slow, but work as solid.
+		pwm = int(Clamp(INJORA35T_STOP+INJORA35T_OFFSET_MIN_WORK_PWM+velocity*(INJORA35T_WIDTH/1.35) #21t targets 1570~1570-(40/1.35*8)    #2.5(1570 ~ 1698) was too slow, but work as solid.
 		# pwm = int(Clamp(INJORA35T_STOP+velocity*INJORA35T_WIDTH #targets 1500 ~ 1900
 			,INJORA35T_STOP
 			,INJORA35T_STOP + (INJORA35T_WIDTH*10)))
