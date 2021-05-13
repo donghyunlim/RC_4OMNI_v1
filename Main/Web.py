@@ -24,7 +24,7 @@ ESC_WEAPON=15 #ESC used weapon
 SERVO_WEAPON_1=18 #Servo used weapon
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
-KICK_SOLENOID = 24 #cam y
+KICK_SOLENOID = 16 #cam y
 STEER = 27 #steering servo
 
 INJORA35T_STOP=1500 #should be init. (by manually)
@@ -40,6 +40,7 @@ Camera_X = 1500
 Camera_Y = 1000
 
 pi = pigpio.pi()
+pi.set_mode(KICK_SOLENOID, pigpio.OUTPUT)
 pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
 pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 pi.set_PWM_frequency(ESC,500) #supersafe -> 50hz, spec -> 500hz
@@ -184,8 +185,8 @@ def kickSolenoid():
 	state = request.args.get("state")
 	if state == "run":
 		pi.write(KICK_SOLENOID, 1)
-		solenoidStopTimer = Timer(0.15, kickSolenoidStop)
-		solenoidStopTimer.start()
+		# solenoidStopTimer = Timer(0.15, kickSolenoidStop)
+		# solenoidStopTimer.start()
 	elif state == "stop":
 		pi.write(KICK_SOLENOID, 0)
 	else: 
