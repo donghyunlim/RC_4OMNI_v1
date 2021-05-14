@@ -25,6 +25,8 @@ SERVO_WEAPON_1=18 #Servo used weapon
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
 KICK_SOLENOID = 24 #relay for solenoid
+KICK_SOLENOID_PWR_SUPPORT_1 = 25 #relay for solenoid
+KICK_SOLENOID_PWR_SUPPORT_2 = 8 #relay for solenoid
 STEER = 27 #steering servo
 
 INJORA35T_STOP=1500 #should be init. (by manually)
@@ -185,12 +187,18 @@ def kickSolenoid():
 	state = request.args.get("state")
 	if state == "run":
 		pi.write(KICK_SOLENOID, 1)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_1, 1)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_2, 1)
 		solenoidStopTimer = Timer(0.15, kickSolenoidStop)
 		solenoidStopTimer.start()
 	elif state == "stop":
 		pi.write(KICK_SOLENOID, 0)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_1, 0)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_2, 0)
 	else: 
 		pi.write(KICK_SOLENOID, 0)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_1, 0)
+		pi.write(KICK_SOLENOID_PWR_SUPPORT_2, 0)
 	return "Checked: " + state
 
 #Blade
