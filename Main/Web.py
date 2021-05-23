@@ -265,6 +265,8 @@ def onUse():
 
 def kickSolenoidStop():
 	pi.write(KICK_SOLENOID, 0)
+	pi.write(KICK_SOLENOID_PWR_SUPPORT_1, 0)
+	pi.write(KICK_SOLENOID_PWR_SUPPORT_2, 0)
 	# print('kick solenoid stop')
 
 if __name__ == "__main__":
