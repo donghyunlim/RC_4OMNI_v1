@@ -126,74 +126,82 @@ def damaged():
 	ledController.blinkingAndDimming(4)
 
 #TODO: 
-@app.route("/move")
 # @app.route("/motor")
+def rr_ahead(velocity):
+	pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25) #second parameter range => (0 ~ 255)
+	pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
+
+def rr_back(velocity): 
+    pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
+    pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
+
+def rl_ahead(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
+	
+def rl_back(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
+
+def fr_ahead(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
+
+def fr_back(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
+
+def fl_ahead(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
+
+def fl_back(velocity): 
+	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
+	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
+
+@app.route("/move")
 def motorControl(): 
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25) #second parameter range => (0 ~ 255)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
+		rl_ahead(velocity)
+		rr_ahead(velocity)
+		fl_ahead(velocity)
+		fr_ahead(velocity)
 	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
+		rr_back(velocity)
+		rl_back(velocity)
+		fr_back(velocity)
+		fl_back(velocity)
 	elif state == "left":
 		velocity = int(request.args.get("vel"))
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
+		fr_ahead(velocity)
+		rr_back(velocity)
+		rl_ahead(velocity)
+		fl_back(velocity)
 	elif state == "right":
-		velocity = int(request.args.get("vel"))		
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
+		velocity = int(request.args.get("vel"))
+		fr_back(velocity)
+		rr_ahead(velocity)
+		rl_back(velocity)
+		fl_ahead(velocity)
 	elif state == "upper_right": 
 		velocity = int(request.args.get("vel"))	
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
+		rr_ahead(velocity)
+		fl_ahead(velocity)
 	elif state == "lower_left":
 		velocity = int(request.args.get("vel"))	
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
+		rr_back(velocity)
+		fl_back(velocity)
 	elif state == "upper_left": 
 		velocity = int(request.args.get("vel"))	
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
+		fr_ahead(velocity)
+		fl_ahead(velocity)
 	elif state == "lower_right": 
 		velocity = int(request.args.get("vel"))	
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
+		fr_back(velocity)
+		rl_back(velocity)
 	elif state == "stop":
     	# velocity = int(request.args.get("vel"))
     	# pi.set_PWM_dutycycle(MOTOR_C_L,0)
@@ -237,25 +245,17 @@ def motorControl():
 def steerContorl():
 	dir = request.args.get("dir")
 	if dir == "cw": #Clock wise
-		velocity = int(request.args.get("vel"))		
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
+		velocity = int(request.args.get("vel"))
+		rl_ahead(velocity)
+		rr_back(velocity)
+		fl_ahead(velocity)
+		fr_back(velocity)
 	elif dir == "ccw": #Counter clock wise
 		velocity = int(request.args.get("vel"))
-		pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
-		pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
-		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
+		rr_ahead(velocity)
+		rl_back(velocity)
+		fr_ahead(velocity)
+		fl_back(velocity)
 	else: 
 		# velocity = int(request.args.get("vel"))
     	# pi.set_PWM_dutycycle(MOTOR_C_L,0)
