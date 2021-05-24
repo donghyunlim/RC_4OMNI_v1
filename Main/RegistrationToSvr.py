@@ -23,7 +23,7 @@ RESTFUL_EXPRESSION = '/rc'
 RESTFUL_EXPRESSION_JOIN = '/join/rc'
 
 # response = requests.post(SVR_BASE_ADDR+RESTFUL_EXPRESSION)
-typeOfRc = 'Rc4WheelV1'
+typeOfRc = 'RcMech4WheelV1'
 
 def setInfoToWebsvr():
   global ipv4Public
