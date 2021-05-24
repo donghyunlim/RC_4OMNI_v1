@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #! /usr/bin/env python
 # this Web.py also forks RegistrationToSvr.py - Donny
-# 단순 클라이언트의 post 요청을 받는 웹서버 였으나, 이제는 웹 담당일진
 # 사무실 내 서버컴퓨터와의 등록/세션핸들링, 미디어서버와의 접속, 클라이언트와의 접속 모든걸 담당한다.
 from flask import Flask, request
 import os     #importing os library so as to communicate with the system
@@ -9,7 +8,6 @@ import time   #importing time library to make Rpi wait because its too impatient
 os.system ("sudo pigpiod") #Launching GPIO library
 time.sleep(1) # As i said it is too impatient and so if this delay is removed you will get an error
 import pigpio #importing GPIO library
-# Raspberry Pi PWN PIN 12, 13, 18, 19
 import RegistrationToSvr
 import SmoothGpioController
 # import GpioController
@@ -19,15 +17,23 @@ import requests
 from threading import Timer
 
 ##PIN MAP
-ESC=12 #Main Motor
 ESC_WEAPON=15 #ESC used weapon
-SERVO_WEAPON_1=18 #Servo used weapon
 CAMERA_X = 22 #cam x
 CAMERA_Y = 23 #cam y
 KICK_SOLENOID = 24 #relay for solenoid
 KICK_SOLENOID_PWR_SUPPORT_1 = 25 #relay for solenoid
 KICK_SOLENOID_PWR_SUPPORT_2 = 8 #relay for solenoid
-STEER = 27 #steering servo
+
+##OMNI MOTOR
+# Raspberry Pi PWN PIN 12, 13, 18, 19
+MOTOR_A_L=5  #FRONT_LEFT
+MOTOR_A_R=6  #FRONT_LEFT
+MOTOR_B_L=13 #FRONT_RIGHT
+MOTOR_B_R=19 #FRONT_RIGHT
+MOTOR_C_L=12 #BACK_LEFT
+MOTOR_C_R=16 #BACK_LEFT
+MOTOR_D_L=20 #BACK_RIGHT
+MOTOR_D_R=21 #BACK_RIGHT
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
@@ -43,10 +49,17 @@ Camera_Y = 1000
 
 pi = pigpio.pi()
 pi.set_mode(KICK_SOLENOID, pigpio.OUTPUT)
-pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
-pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
-pi.set_PWM_frequency(ESC,500) #supersafe -> 50hz, spec -> 500hz
-pi.set_PWM_frequency(ESC_WEAPON,50) #supersafe -> 50hz
+# pi.set_mode(MOTOR_A, pigpio.OUTPUT)
+pi.set_PWM_frequency(MOTOR_A_L,100) #supersafe -> 50hz, but pretty sure the frequency doesnt make any difference to output power, the really matter is 'duty cycle'
+pi.set_PWM_frequency(MOTOR_A_R,100)
+pi.set_PWM_frequency(MOTOR_B_L,100)
+pi.set_PWM_frequency(MOTOR_B_R,100)
+pi.set_PWM_frequency(MOTOR_C_L,100)
+pi.set_PWM_frequency(MOTOR_C_R,100)
+pi.set_PWM_frequency(MOTOR_D_L,100)
+pi.set_PWM_frequency(MOTOR_D_R,100)
+#18 different frequencies (8000, 4000, 2000, 1600, 1000, 800, 500, 400, 320, 250, 200, 160, 100, 80, 50, 40, 20, 10)
+#limited steps between off and fully on (25 at 8000Hz, 250 at 800Hz, 4000 at 50Hz)
 
 # gpioController = GpioController.GpioController() #GPIO fast-serized queue system(sort of)
 gpioController = SmoothGpioController.GpioController() #GPIO fast-serized queue system(sort of)
@@ -92,14 +105,6 @@ def joinRoom():
 
 @app.route("/init")
 def arm():  
-	#motor
-	pi.set_PWM_frequency(ESC,500)
-	gpioController.gpio_PIN_PWM(ESC, 1500) # stop
-	pi.set_servo_pulsewidth(ESC, INJORA35T_STOP)
-	#weapon(esc)
-	pi.set_PWM_frequency(ESC_WEAPON,50) # 20 times per a second.
-	gpioController.gpio_PIN_PWM(ESC_WEAPON, 1500) # stop
-	pi.set_servo_pulsewidth(ESC_WEAPON, INJORA35T_STOP)
 	#movement
 	pi.set_PWM_frequency(STEER,50)
 	pi.set_servo_pulsewidth(STEER, 1500)
@@ -120,50 +125,34 @@ def damaged():
 	ledController.setTargetBright(255,0,0)
 	ledController.blinkingAndDimming(4)
 
-#good
-@app.route("/motor")
+#TODO: 
+@app.route("/move")
+# @app.route("/motor")
 def motorControl(): 
 	state = request.args.get("state")
 	if state == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP-INJORA35T_OFFSET_MIN_WORK_PWM-velocity*(INJORA35T_WIDTH/1.35) #21t targets 1430~1430-(40/1.35*8)   #2.5(1430 ~ 1302) was too slow, but work as solid.
-		# pwm = int(Clamp(INJORA35T_STOP-velocity*INJORA35T_WIDTH #targets 1500 ~ 1100
-			,INJORA35T_STOP - (INJORA35T_WIDTH*10)
-			,INJORA35T_STOP))
-		gpioController.gpio_PIN_PWM(ESC, pwm)
+		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25) #second parameter range => (0 ~ 255)
 	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
-		pwm = int(Clamp(INJORA35T_STOP+INJORA35T_OFFSET_MIN_WORK_PWM+velocity*(INJORA35T_WIDTH/1.35) #21t targets 1570~1570-(40/1.35*8)    #2.5(1570 ~ 1698) was too slow, but work as solid.
-		# pwm = int(Clamp(INJORA35T_STOP+velocity*INJORA35T_WIDTH #targets 1500 ~ 1900
-			,INJORA35T_STOP
-			,INJORA35T_STOP + (INJORA35T_WIDTH*10)))
-		gpioController.gpio_PIN_PWM(ESC, pwm)
+		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
 	elif state == "stop":
-		gpioController.gpio_PIN_PWM(ESC, INJORA35T_STOP)
+		pi.write(MOTOR_A_L, 0)
 	else: 
-		gpioController.gpio_PIN_PWM(ESC, INJORA35T_STOP)
+		pi.write(MOTOR_A_L, 0)
 	return ""
 	
-#good
-@app.route("/steer")
+#TODO
+@app.route("/rotate")
 def steerContorl():
 	dir = request.args.get("dir")
-	# aligned = 2050 #2050 중립 +-200
-	moveTo = 200
-	if dir == "right":
-		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(INJORA35T_STOP+velocity*20,INJORA35T_STOP,INJORA35T_STOP+moveTo)))
-		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500+velocity*30,1500,1800)))
-		# pi.set_servo_pulsewidth(STEER,1720)
-	elif dir == "left":
-		velocity = int(request.args.get("vel"))
-		pi.set_servo_pulsewidth(STEER, int(Clamp(INJORA35T_STOP-velocity*20,INJORA35T_STOP-moveTo,INJORA35T_STOP)))
-		# pi.set_servo_pulsewidth(STEER, int(Clamp(1500-velocity*10,1320,1500)))
-		# pi.set_servo_pulsewidth(STEER,1320)
-	elif dir == "straight": #not use
-		# pi.set_servo_pulsewidth(STEER, int(Clamp(1510+velocity,1510,1520)))
-		pi.set_servo_pulsewidth(STEER,1500)
-	return "steered"
+	if dir == "cw":
+		##
+	elif dir == "ccw":
+		##
+	else:
+		##
+	return ""
 
 #WEAPON1_blade
 @app.route("/weapon1") #1500, 500 2500
