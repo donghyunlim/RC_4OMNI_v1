@@ -136,6 +136,10 @@ def motorControl():
 	elif state == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
 		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
+	elif state == "left":
+		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
+	elif state == "right":
+		pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
 	elif state == "stop":
 		pi.write(MOTOR_A_L, 0)
 	else: 
@@ -146,9 +150,9 @@ def motorControl():
 @app.route("/rotate")
 def steerContorl():
 	dir = request.args.get("dir")
-	if dir == "cw":
+	if dir == "cw": #Clock wise
 		##
-	elif dir == "ccw":
+	elif dir == "ccw": #Counter clock wise
 		##
 	else:
 		##
