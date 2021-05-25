@@ -161,48 +161,48 @@ def fl_back(velocity):
 
 @app.route("/move")
 def motorControl(): 
-	state = request.args.get("state")
-	if state == "forward":
+	dir = request.args.get("dir")
+	if dir == "forward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
 		rl_ahead(velocity)
 		rr_ahead(velocity)
 		fl_ahead(velocity)
 		fr_ahead(velocity)
-	elif state == "backward":
+	elif dir == "backward":
 		velocity = int(request.args.get("vel")) #0~10 from mobile.
 		rr_back(velocity)
 		rl_back(velocity)
 		fr_back(velocity)
 		fl_back(velocity)
-	elif state == "left":
+	elif dir == "left":
 		velocity = int(request.args.get("vel"))
 		fr_ahead(velocity)
 		rr_back(velocity)
 		rl_ahead(velocity)
 		fl_back(velocity)
-	elif state == "right":
+	elif dir == "right":
 		velocity = int(request.args.get("vel"))
 		fr_back(velocity)
 		rr_ahead(velocity)
 		rl_back(velocity)
 		fl_ahead(velocity)
-	elif state == "upper_right": 
+	elif dir == "upper_right": 
 		velocity = int(request.args.get("vel"))	
 		rr_ahead(velocity)
 		fl_ahead(velocity)
-	elif state == "lower_left":
+	elif dir == "lower_left":
 		velocity = int(request.args.get("vel"))	
 		rr_back(velocity)
 		fl_back(velocity)
-	elif state == "upper_left": 
+	elif dir == "upper_left": 
 		velocity = int(request.args.get("vel"))	
 		fr_ahead(velocity)
 		fl_ahead(velocity)
-	elif state == "lower_right": 
+	elif dir == "lower_right": 
 		velocity = int(request.args.get("vel"))	
 		fr_back(velocity)
 		rl_back(velocity)
-	elif state == "stop":
+	elif dir == "stop":
     	# velocity = int(request.args.get("vel"))
     	# pi.set_PWM_dutycycle(MOTOR_C_L,0)
 		# pi.set_PWM_dutycycle(MOTOR_C_R,0)
