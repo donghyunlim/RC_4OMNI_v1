@@ -26,14 +26,31 @@ KICK_SOLENOID_PWR_SUPPORT_2 = 8 #relay for solenoid
 
 ##OMNI MOTOR
 # Raspberry Pi PWN PIN 12, 13, 18, 19
-MOTOR_A_L=5  #FRONT_LEFT
-MOTOR_A_R=6  #FRONT_LEFT
-MOTOR_B_L=13 #FRONT_RIGHT
-MOTOR_B_R=19 #FRONT_RIGHT
-MOTOR_C_L=12 #BACK_LEFT
-MOTOR_C_R=16 #BACK_LEFT
-MOTOR_D_L=20 #BACK_RIGHT
-MOTOR_D_R=21 #BACK_RIGHT
+#MOTOR_A_L=5  #FRONT_LEFT
+#MOTOR_A_R=6  #FRONT_LEFT
+#MOTOR_B_L=13 #FRONT_RIGHT
+#MOTOR_B_R=19 #FRONT_RIGHT
+#MOTOR_C_L=12 #BACK_LEFT
+#MOTOR_C_R=16 #BACK_LEFT
+#MOTOR_D_L=20 #BACK_RIGHT
+#MOTOR_D_R=21 #BACK_RIGHT
+
+# rear right wheel
+IN1Rear=16
+IN2Rear=12
+
+# rear left wheel
+IN3Rear=20
+IN4Rear=21
+
+# infront right wheel
+IN1Front=5
+IN2Front=6
+
+# infront left wheel
+IN3Front=19
+IN4Front=13
+
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
@@ -50,14 +67,14 @@ Camera_Y = 1000
 pi = pigpio.pi()
 pi.set_mode(KICK_SOLENOID, pigpio.OUTPUT)
 # pi.set_mode(MOTOR_A, pigpio.OUTPUT)
-pi.set_PWM_frequency(MOTOR_A_L,100) #supersafe -> 50hz, but pretty sure the frequency doesnt make any difference to output power, the really matter is 'duty cycle'
-pi.set_PWM_frequency(MOTOR_A_R,100)
-pi.set_PWM_frequency(MOTOR_B_L,100)
-pi.set_PWM_frequency(MOTOR_B_R,100)
-pi.set_PWM_frequency(MOTOR_C_L,100)
-pi.set_PWM_frequency(MOTOR_C_R,100)
-pi.set_PWM_frequency(MOTOR_D_L,100)
-pi.set_PWM_frequency(MOTOR_D_R,100)
+pi.set_PWM_frequency(IN1Rear,100) #supersafe -> 50hz, but pretty sure the frequency doesnt make any difference to output power, the really matter is 'duty cycle'
+pi.set_PWM_frequency(IN2Rear,100)
+pi.set_PWM_frequency(IN3Rear,100)
+pi.set_PWM_frequency(IN4Rear,100)
+pi.set_PWM_frequency(IN1Front,100)
+pi.set_PWM_frequency(IN2Front,100)
+pi.set_PWM_frequency(IN3Front,100)
+pi.set_PWM_frequency(IN4Front,100)
 #18 different frequencies (8000, 4000, 2000, 1600, 1000, 800, 500, 400, 320, 250, 200, 160, 100, 80, 50, 40, 20, 10)
 #limited steps between off and fully on (25 at 8000Hz, 250 at 800Hz, 4000 at 50Hz)
 
@@ -128,36 +145,84 @@ def damaged():
 #TODO: 
 # @app.route("/motor")
 def rr_ahead(velocity):
-	pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25) #second parameter range => (0 ~ 255)
-	pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
+	pi.set_PWM_dutycycle(IN1Rear,velocity*25) #second parameter range => (0 ~ 255)
+	pi.set_PWM_dutycycle(IN2Rear,velocity*0)
 
 def rr_back(velocity): 
-    pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
-    pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
+    pi.set_PWM_dutycycle(IN2Rear,velocity*25)
+    pi.set_PWM_dutycycle(IN1Rear,velocity*0)
+
+def rr_stop(velocity):
+    pi.set_PWM_dutycycle(IN1Rear,velocity*0)
+    pi.set_PWM_dutycycle(IN2Rear,velocity*0)
 
 def rl_ahead(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
+	pi.set_PWM_dutycycle(IN3Rear,velocity*25)
+	pi.set_PWM_dutycycle(IN4Rear,velocity*0)
 	
 def rl_back(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
+	pi.set_PWM_dutycycle(IN4Rear,velocity*25)
+	pi.set_PWM_dutycycle(IN3Rear,velocity*0)
+
+def rl_stop(velocity):
+	pi.set_PWM_dutycycle(IN3Rear,velocity*0)
+	pi.set_PWM_dutycycle(IN4Rear,velocity*0)
 
 def fr_ahead(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
+	pi.set_PWM_dutycycle(IN1Front,velocity*25)
+	pi.set_PWM_dutycycle(IN2Front,velocity*0)
 
 def fr_back(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
+	pi.set_PWM_dutycycle(IN2Front,velocity*25)
+	pi.set_PWM_dutycycle(IN1Front,velocity*0)
+
+def fr_stop(velocity): 
+	pi.set_PWM_dutycycle(IN1Front,velocity*0)
+	pi.set_PWM_dutycycle(IN2Front,velocity*0)
 
 def fl_ahead(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
+	pi.set_PWM_dutycycle(IN3Front,velocity*25)
+	pi.set_PWM_dutycycle(IN4Front,velocity*0)
 
 def fl_back(velocity): 
-	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
-	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
+	pi.set_PWM_dutycycle(IN4Front,velocity*25)
+	pi.set_PWM_dutycycle(IN3Front,velocity*0)
+
+def fl_stop(velocity): 
+	pi.set_PWM_dutycycle(IN3Front,velocity*0)
+	pi.set_PWM_dutycycle(IN4Front,velocity*0)
+
+#   def rr_ahead(velocity):
+# 	pi.set_PWM_dutycycle(MOTOR_D_L,velocity*25) #second parameter range => (0 ~ 255)
+# 	pi.set_PWM_dutycycle(MOTOR_D_R,velocity*0)
+
+# def rr_back(velocity): 
+#     pi.set_PWM_dutycycle(MOTOR_D_R,velocity*25)
+#     pi.set_PWM_dutycycle(MOTOR_D_L,velocity*0)
+
+# def rl_ahead(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*0)
+	
+# def rl_back(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_C_R,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_C_L,velocity*0)
+
+# def fr_ahead(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*0)
+
+# def fr_back(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_B_R,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_B_L,velocity*0)
+
+# def fl_ahead(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*0)
+
+# def fl_back(velocity): 
+# 	pi.set_PWM_dutycycle(MOTOR_A_R,velocity*25)
+# 	pi.set_PWM_dutycycle(MOTOR_A_L,velocity*0)
 
 @app.route("/move")
 def motorControl(): 
@@ -197,7 +262,7 @@ def motorControl():
 	elif dir == "upper_left": 
 		velocity = int(request.args.get("vel"))	
 		fr_ahead(velocity)
-		fl_ahead(velocity)
+		rl_ahead(velocity)
 	elif dir == "lower_right": 
 		velocity = int(request.args.get("vel"))	
 		fr_back(velocity)
@@ -212,14 +277,14 @@ def motorControl():
 		# pi.set_PWM_dutycycle(MOTOR_A_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_L,0)
-		pi.write(MOTOR_A_L, 0)
-		pi.write(MOTOR_A_R, 0)
-		pi.write(MOTOR_B_L, 0)
-		pi.write(MOTOR_B_R, 0)
-		pi.write(MOTOR_C_L, 0)
-		pi.write(MOTOR_C_R, 0)
-		pi.write(MOTOR_D_L, 0)
-		pi.write(MOTOR_D_R, 0)
+		pi.write(IN1Rear, 0)
+		pi.write(IN2Rear, 0)
+		pi.write(IN3Rear, 0)
+		pi.write(IN4Rear, 0)
+		pi.write(IN1Front, 0)
+		pi.write(IN2Front, 0)
+		pi.write(IN3Front, 0)
+		pi.write(IN4Front, 0)
 	else: 
 		# velocity = int(request.args.get("vel"))
     	# pi.set_PWM_dutycycle(MOTOR_C_L,0)
@@ -230,14 +295,14 @@ def motorControl():
 		# pi.set_PWM_dutycycle(MOTOR_A_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_L,0)
-		pi.write(MOTOR_A_L, 0)
-		pi.write(MOTOR_A_R, 0)
-		pi.write(MOTOR_B_L, 0)
-		pi.write(MOTOR_B_R, 0)
-		pi.write(MOTOR_C_L, 0)
-		pi.write(MOTOR_C_R, 0)
-		pi.write(MOTOR_D_L, 0)
-		pi.write(MOTOR_D_R, 0)
+		pi.write(IN1Rear, 0)
+		pi.write(IN2Rear, 0)
+		pi.write(IN3Rear, 0)
+		pi.write(IN4Rear, 0)
+		pi.write(IN1Front, 0)
+		pi.write(IN2Front, 0)
+		pi.write(IN3Front, 0)
+		pi.write(IN4Front, 0)
 	return ""
 	
 #TODO
@@ -245,17 +310,17 @@ def motorControl():
 def steerContorl():
 	dir = request.args.get("dir")
 	if dir == "cw": #Clock wise
-		velocity = int(request.args.get("vel"))
-		rl_ahead(velocity)
-		rr_back(velocity)
-		fl_ahead(velocity)
-		fr_back(velocity)
+		# velocity = int(request.args.get("vel"))
+		rl_ahead(10)
+		rr_back(10)
+		fl_ahead(10)
+		fr_back(10)
 	elif dir == "ccw": #Counter clock wise
-		velocity = int(request.args.get("vel"))
-		rr_ahead(velocity)
-		rl_back(velocity)
-		fr_ahead(velocity)
-		fl_back(velocity)
+		# velocity = int(request.args.get("vel"))
+		rr_ahead(10)
+		rl_back(10)
+		fr_ahead(10)
+		fl_back(10)
 	else: 
 		# velocity = int(request.args.get("vel"))
     	# pi.set_PWM_dutycycle(MOTOR_C_L,0)
@@ -266,14 +331,14 @@ def steerContorl():
 		# pi.set_PWM_dutycycle(MOTOR_A_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_R,0)
 		# pi.set_PWM_dutycycle(MOTOR_B_L,0)
-		pi.write(MOTOR_A_L, 0)
-		pi.write(MOTOR_A_R, 0)
-		pi.write(MOTOR_B_L, 0)
-		pi.write(MOTOR_B_R, 0)
-		pi.write(MOTOR_C_L, 0)
-		pi.write(MOTOR_C_R, 0)
-		pi.write(MOTOR_D_L, 0)
-		pi.write(MOTOR_D_R, 0)
+		pi.write(IN1Rear, 0)
+		pi.write(IN2Rear, 0)
+		pi.write(IN3Rear, 0)
+		pi.write(IN4Rear, 0)
+		pi.write(IN1Front, 0)
+		pi.write(IN2Front, 0)
+		pi.write(IN3Front, 0)
+		pi.write(IN4Front, 0)
 	return ""
 
 #WEAPON1_blade
