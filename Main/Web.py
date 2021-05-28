@@ -18,11 +18,11 @@ from threading import Timer
 
 ##PIN MAP
 ESC_WEAPON=15 #ESC used weapon
-CAMERA_X = 22 #cam x
-CAMERA_Y = 23 #cam y
-KICK_SOLENOID = 24 #relay for solenoid
-KICK_SOLENOID_PWR_SUPPORT_1 = 25 #relay for solenoid
-KICK_SOLENOID_PWR_SUPPORT_2 = 8 #relay for solenoid
+CAMERA_X = 17 #cam x
+CAMERA_Y = 27 #cam y
+KICK_SOLENOID = 25 #relay for solenoid
+KICK_SOLENOID_PWR_SUPPORT_1 = 8 #relay for solenoid
+KICK_SOLENOID_PWR_SUPPORT_2 = 7 #relay for solenoid
 
 ##OMNI MOTOR
 # Raspberry Pi PWN PIN 12, 13, 18, 19
@@ -35,22 +35,21 @@ KICK_SOLENOID_PWR_SUPPORT_2 = 8 #relay for solenoid
 #MOTOR_D_L=20 #BACK_RIGHT
 #MOTOR_D_R=21 #BACK_RIGHT
 
+# Front right wheel
+IN1Front=14
+IN2Front=15
+
+# Front left wheel
+IN3Front=24
+IN4Front=23
+
 # rear right wheel
-IN1Rear=16
-IN2Rear=12
+IN1Rear=20
+IN2Rear=21
 
 # rear left wheel
-IN3Rear=20
-IN4Rear=21
-
-# infront right wheel
-IN1Front=5
-IN2Front=6
-
-# infront left wheel
-IN3Front=19
-IN4Front=13
-
+IN3Rear=12
+IN4Rear=16
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
@@ -122,12 +121,6 @@ def joinRoom():
 
 @app.route("/init")
 def arm():  
-	#movement
-	pi.set_PWM_frequency(STEER,50)
-	pi.set_servo_pulsewidth(STEER, 1500)
-	#weapon(servo)
-	pi.set_PWM_frequency(SERVO_WEAPON_1,50) # 20 times per a second.
-	pi.set_servo_pulsewidth(SERVO_WEAPON_1, INJORA35T_STOP)
 	#camera
 	pi.set_PWM_frequency(CAMERA_X,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
 	pi.set_servo_pulsewidth(CAMERA_X,1500) #500(min) - 2500(max)
@@ -239,19 +232,19 @@ def motorControl():
 		rl_back(velocity)
 		fr_back(velocity)
 		fl_back(velocity)
-	elif dir == "left":
+	elif dir == "right":
 		velocity = int(request.args.get("vel"))
 		fr_ahead(velocity)
 		rr_back(velocity)
 		rl_ahead(velocity)
 		fl_back(velocity)
-	elif dir == "right":
+	elif dir == "left":
 		velocity = int(request.args.get("vel"))
 		fr_back(velocity)
 		rr_ahead(velocity)
 		rl_back(velocity)
 		fl_ahead(velocity)
-	elif dir == "upper_right": 
+	elif dir == "upper_left": 
 		velocity = int(request.args.get("vel"))	
 		rr_ahead(velocity)
 		fl_ahead(velocity)
@@ -259,7 +252,7 @@ def motorControl():
 		velocity = int(request.args.get("vel"))	
 		rr_back(velocity)
 		fl_back(velocity)
-	elif dir == "upper_left": 
+	elif dir == "upper_right": 
 		velocity = int(request.args.get("vel"))	
 		fr_ahead(velocity)
 		rl_ahead(velocity)
@@ -309,13 +302,13 @@ def motorControl():
 @app.route("/rotate")
 def steerContorl():
 	dir = request.args.get("dir")
-	if dir == "cw": #Clock wise
+	if dir == "ccw": #Clock wise
 		# velocity = int(request.args.get("vel"))
 		rl_ahead(10)
 		rr_back(10)
 		fl_ahead(10)
 		fr_back(10)
-	elif dir == "ccw": #Counter clock wise
+	elif dir == "cw": #Counter clock wise
 		# velocity = int(request.args.get("vel"))
 		rr_ahead(10)
 		rl_back(10)
