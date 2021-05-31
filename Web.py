@@ -8,11 +8,11 @@ import time   #importing time library to make Rpi wait because its too impatient
 os.system ("sudo pigpiod") #Launching GPIO library
 time.sleep(1) # As i said it is too impatient and so if this delay is removed you will get an error
 import pigpio #importing GPIO library
-import RegistrationToSvr
-import SmoothGpioController
+from rpi_common_module import RegistrationToSvr
+from rpi_common_module import SmoothGpioController
 # import GpioController
-import HeartBeatToSvr
-import LedController
+from rpi_common_module import HeartBeatToSvr
+from rpi_common_module import LedController
 import requests
 from threading import Timer
 

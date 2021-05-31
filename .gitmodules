@@ -1,0 +1,3 @@
+[submodule "rpi_common_module"]
+	path = rpi_common_module
+	url = https://github.com/donghyunlim/rpi_common_module
