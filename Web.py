@@ -2,7 +2,7 @@
 #! /usr/bin/env python
 # this Web.py also forks RegistrationToSvr.py - Donny
 # 사무실 내 서버컴퓨터와의 등록/세션핸들링, 미디어서버와의 접속, 클라이언트와의 접속 모든걸 담당한다.
-from flask import Flask, request
+from flask import Flask, request, Blueprint
 import os     #importing os library so as to communicate with the system
 import time   #importing time library to make Rpi wait because its too impatient 
 os.system ("sudo pigpiod") #Launching GPIO library
@@ -13,6 +13,7 @@ from rpi_common_module import SmoothGpioController
 # import GpioController
 from rpi_common_module import HeartBeatToSvr
 from rpi_common_module import LedController
+from rpi_common_module import device_http_api_handler
 import requests
 from threading import Timer
 
@@ -35,21 +36,32 @@ KICK_SOLENOID_PWR_SUPPORT_2 = 7 #relay for solenoid
 #MOTOR_D_L=20 #BACK_RIGHT
 #MOTOR_D_R=21 #BACK_RIGHT
 
+####First version, soldering.
 # Front right wheel
+# IN1Front=14
+# IN2Front=15
+# Front left wheel
+# IN3Front=24
+# IN4Front=23
+# rear right wheel
+# IN1Rear=20
+# IN2Rear=21
+# rear left wheel
+# IN3Rear=12
+# IN4Rear=16
+# Front right wheel
+####Second version, jumper improved version.
 IN1Front=14
 IN2Front=15
-
 # Front left wheel
-IN3Front=24
-IN4Front=23
-
+IN3Front=23
+IN4Front=24
 # rear right wheel
 IN1Rear=20
 IN2Rear=21
-
 # rear left wheel
-IN3Rear=12
-IN4Rear=16
+IN3Rear=16
+IN4Rear=12
 
 INJORA35T_STOP=1500 #should be init. (by manually)
 INJORA35T_WIDTH=40 #*10 pwm, 40 means it has +-400 pwm.
@@ -99,6 +111,7 @@ heartbeater.heartbeating()
 ledController = LedController.LedControl()
 
 app = Flask(__name__)
+app.register_blueprint(device_http_api_handler.DeviceHttpApiHandler.deviceHttpApiHandler)
 
 def Clamp(val,vMin,vMax):
 	if  val > vMin and val < vMax:
@@ -126,6 +139,14 @@ def arm():
 	pi.set_servo_pulsewidth(CAMERA_X,1500) #500(min) - 2500(max)
 	pi.set_PWM_frequency(CAMERA_Y,50) #Hz, (pulse 1.52ms)---(rest 18.48ms)---(pulse 1.52ms)
 	pi.set_servo_pulsewidth(CAMERA_Y,1500)
+	pi.write(IN1Rear, 0)
+	pi.write(IN2Rear, 0)
+	pi.write(IN3Rear, 0)
+	pi.write(IN4Rear, 0)
+	pi.write(IN1Front, 0)
+	pi.write(IN2Front, 0)
+	pi.write(IN3Front, 0)
+	pi.write(IN4Front, 0)
 	time.sleep(100)
 	return "ready"
 	
