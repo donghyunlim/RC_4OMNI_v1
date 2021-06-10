@@ -14,6 +14,8 @@ from rpi_common_module import SmoothGpioController
 from rpi_common_module import HeartBeatToSvr
 from rpi_common_module import LedController
 from rpi_common_module import device_http_api_handler
+from rpi_common_module.model import device_info
+#from rpi_common_module.api_provider import server_http_api_provider
 import requests
 from threading import Timer
 
@@ -105,13 +107,23 @@ gpioController.popDequePeriodically()
 #Server Matters
 RegistrationToSvr.__name__ #Do registration work to onff local server.
 registratorVariableGetter = RegistrationToSvr.Getter()
-heartbeater = HeartBeatToSvr.HeartBeating()
-heartbeater.setMyInfo(
+
+deviceInformation = device_info.DeviceInformation()
+deviceInformation.setMyInformation(
 	registratorVariableGetter.getMyType(),
 	registratorVariableGetter.getPrivIP(),
 	registratorVariableGetter.getPublibcIP(),
 	registratorVariableGetter.getMyPrefferedWebSvrPort(),
 	registratorVariableGetter.getMyPrefferedMediaSvrPort()
+)
+
+heartbeater = HeartBeatToSvr.HeartBeating()
+heartbeater.setMyInfo(
+	deviceInformation.deviceType,
+	deviceInformation.privIP,
+	deviceInformation.publicIP,
+	deviceInformation.websvrPort,
+	deviceInformation.mediasvrPort
 )
 heartbeater.heartbeating()
 
